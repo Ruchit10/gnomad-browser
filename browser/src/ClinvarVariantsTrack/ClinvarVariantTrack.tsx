@@ -96,10 +96,17 @@ type Props = {
   referenceGenome: 'GRCh37' | 'GRCh38'
   transcripts: Transcript[]
   variants: ClinvarVariant[]
+  onFilterGnomadVariants?: (enabled: boolean) => void
 }
 
-const ClinvarVariantTrack = ({ referenceGenome, transcripts, variants }: Props) => {
+const ClinvarVariantTrack = ({
+  referenceGenome,
+  transcripts,
+  variants,
+  onFilterGnomadVariants,
+}: Props) => {
   const [selectedVariant, setSelectedVariant] = useState(null)
+  const [filterGnomadVariants, setFilterGnomadVariants] = useState(false)
 
   const [includedClinicalSignificanceCategories, setIncludedClinicalSignificanceCategories] =
     useState(
@@ -244,6 +251,19 @@ const ClinvarVariantTrack = ({ referenceGenome, transcripts, variants }: Props) 
               </select>
             </label>
           </FilterRow>
+          {onFilterGnomadVariants && (
+            <FilterRow>
+              <Checkbox
+                id="clinvar-track-filter-gnomad-variants"
+                label="Filter gnomAD variants table to ClinVar set"
+                checked={filterGnomadVariants}
+                onChange={(value) => {
+                  setFilterGnomadVariants(value)
+                  onFilterGnomadVariants(value)
+                }}
+              />
+            </FilterRow>
+          )}
         </TopPanel>
       </TrackPageSection>
       <Track
