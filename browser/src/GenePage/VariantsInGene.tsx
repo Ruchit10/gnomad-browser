@@ -101,6 +101,7 @@ const VariantsInGene = ({
   const datasetLabel = labelForDataset(datasetId)
 
   const [isTranscriptsModalOpen, setIsTranscriptsModalOpen] = useState(false)
+  const [includeClinvarOnly, setIncludeClinvarOnly] = useState(false)
 
   return (
     <>
@@ -113,6 +114,7 @@ const VariantsInGene = ({
             referenceGenome={referenceGenome(datasetId)}
             transcripts={gene.transcripts}
             variants={filterVariantsInZoomRegion(clinvarVariants, zoomRegion)}
+            onFilterGnomadVariants={setIncludeClinvarOnly}
           />
           <TrackPageSection as="p">
             Data displayed here is from ClinVar&apos;s {formatClinvarDate(clinvarReleaseDate)}{' '}
@@ -128,6 +130,7 @@ const VariantsInGene = ({
         context={gene}
         datasetId={datasetId}
         exportFileName={`${datasetLabel}_${gene.gene_id}`}
+        includeClinvarOnly={includeClinvarOnly}
         variants={filterVariantsInZoomRegion(variants, zoomRegion)}
       >
         <p>

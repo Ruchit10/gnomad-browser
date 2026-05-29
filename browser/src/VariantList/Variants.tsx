@@ -49,6 +49,7 @@ type OwnVariantsProps = {
   context: Gene
   datasetId: DatasetId
   exportFileName?: string
+  includeClinvarOnly?: boolean
   variants: Variant[]
 }
 
@@ -86,6 +87,7 @@ const Variants = ({
   context,
   datasetId,
   exportFileName,
+  includeClinvarOnly = false,
   variants,
 }: VariantsProps) => {
   const table = useRef(null)
@@ -163,7 +165,7 @@ const Variants = ({
   const filteredVariants = useMemo(() => {
     return mergeExomeAndGenomeData({
       datasetId,
-      variants: filterVariants(variants, filter, renderedTableColumns),
+      variants: filterVariants(variants, { ...filter, includeClinvarOnly }, renderedTableColumns),
       preferJointData: filter.includeExomes && filter.includeGenomes,
     })
   }, [datasetId, variants, filter, renderedTableColumns])
