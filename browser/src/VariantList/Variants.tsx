@@ -168,7 +168,7 @@ const Variants = ({
       variants: filterVariants(variants, { ...filter, includeClinvarOnly }, renderedTableColumns),
       preferJointData: filter.includeExomes && filter.includeGenomes,
     })
-  }, [datasetId, variants, filter, renderedTableColumns])
+  }, [datasetId, variants, filter, renderedTableColumns, includeClinvarOnly])
 
   const renderedVariants = useMemo(() => {
     return sortVariants(filteredVariants, sortState)
