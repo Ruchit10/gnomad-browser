@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Track } from '@gnomad/region-viewer'
@@ -96,7 +96,7 @@ type Props = {
   referenceGenome: 'GRCh37' | 'GRCh38'
   transcripts: Transcript[]
   variants: ClinvarVariant[]
-  onFilterGnomadVariants?: (enabled: boolean) => void
+  onFilterGnomadVariants?: (ids: string[] | null) => void
 }
 
 const ClinvarVariantTrack = ({
@@ -133,15 +133,34 @@ const ClinvarVariantTrack = ({
   const [isExpanded, setIsExpanded] = useState(false)
   const [starFilter, setStarFilter] = useState(0)
 
-  const filteredVariants = variants.filter(
-    (v) =>
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      includedClinicalSignificanceCategories[clinvarVariantClinicalSignificanceCategory(v)] &&
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      includedConsequenceCategories[getCategoryFromConsequence(v.major_consequence)] &&
-      (!showOnlyGnomad || v.in_gnomad) &&
-      v.gold_stars >= starFilter
+  const filteredVariants = useMemo(
+    () =>
+      variants.filter(
+        (v) =>
+          // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+          includedClinicalSignificanceCategories[clinvarVariantClinicalSignificanceCategory(v)] &&
+          // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+          includedConsequenceCategories[getCategoryFromConsequence(v.major_consequence)] &&
+          (!showOnlyGnomad || v.in_gnomad) &&
+          v.gold_stars >= starFilter
+      ),
+    [
+      variants,
+      includedClinicalSignificanceCategories,
+      includedConsequenceCategories,
+      showOnlyGnomad,
+      starFilter,
+    ]
   )
+
+  useEffect(() => {
+    if (!onFilterGnomadVariants) return
+    if (filterGnomadVariants) {
+      onFilterGnomadVariants(filteredVariants.map((v) => v.clinvar_variation_id))
+    } else {
+      onFilterGnomadVariants(null)
+    }
+  }, [filterGnomadVariants, filteredVariants, onFilterGnomadVariants])
 
   return (
     <>
@@ -257,10 +276,7 @@ const ClinvarVariantTrack = ({
                 id="clinvar-track-filter-gnomad-variants"
                 label="Filter gnomAD variants table to ClinVar set"
                 checked={filterGnomadVariants}
-                onChange={(value) => {
-                  setFilterGnomadVariants(value)
-                  onFilterGnomadVariants(value)
-                }}
+                onChange={setFilterGnomadVariants}
               />
             </FilterRow>
           )}
