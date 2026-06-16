@@ -10,12 +10,12 @@ const baseFilter: VariantFilterState = {
   includeExomes: true,
   includeGenomes: true,
   includeContext: false,
-  includeClinvarOnly: false,
+  clinvarVariationIds: null,
   searchText: '',
 }
 
 describe('filterVariants', () => {
-  describe('includeClinvarOnly', () => {
+  describe('clinvarVariationIds', () => {
     const clinvarVariant1 = Object.assign(v2VariantFactory.build({ variant_id: '1-100-A-C' }), {
       clinvar_variation_id: '111',
     })
@@ -27,16 +27,16 @@ describe('filterVariants', () => {
 
     const mixedVariants = [clinvarVariant1, nonClinvarVariant1, clinvarVariant2, nonClinvarVariant2]
 
-    it('does not filter variants when includeClinvarOnly is false', () => {
-      const result = filterVariants(mixedVariants, { ...baseFilter, includeClinvarOnly: false }, [])
+    it('does not filter variants when clinvarVariationIds is null', () => {
+      const result = filterVariants(mixedVariants, { ...baseFilter, clinvarVariationIds: null }, [])
       expect(result).toHaveLength(4)
     })
 
-    describe('when includeClinvarOnly is true', () => {
-      it('returns only variants with a clinvar_variation_id', () => {
+    describe('when clinvarVariationIds is provided', () => {
+      it('returns only variants whose clinvar_variation_id is in the set', () => {
         const result = filterVariants(
           mixedVariants,
-          { ...baseFilter, includeClinvarOnly: true },
+          { ...baseFilter, clinvarVariationIds: ['111', '222'] },
           []
         )
         result.forEach((v) => expect((v as any).clinvar_variation_id).toBeTruthy())
@@ -45,7 +45,7 @@ describe('filterVariants', () => {
       it('excludes non-ClinVar variants', () => {
         const result = filterVariants(
           mixedVariants,
-          { ...baseFilter, includeClinvarOnly: true },
+          { ...baseFilter, clinvarVariationIds: ['111', '222'] },
           []
         )
         expect(result).not.toContain(nonClinvarVariant1)
@@ -55,7 +55,7 @@ describe('filterVariants', () => {
       it('includes all ClinVar variants present in gnomAD', () => {
         const result = filterVariants(
           mixedVariants,
-          { ...baseFilter, includeClinvarOnly: true },
+          { ...baseFilter, clinvarVariationIds: ['111', '222'] },
           []
         )
         const resultIds = result.map((v) => (v as any).clinvar_variation_id)
@@ -66,10 +66,21 @@ describe('filterVariants', () => {
       it('returns an empty list when no variants have a clinvar_variation_id', () => {
         const result = filterVariants(
           [nonClinvarVariant1, nonClinvarVariant2],
-          { ...baseFilter, includeClinvarOnly: true },
+          { ...baseFilter, clinvarVariationIds: ['111', '222'] },
           []
         )
         expect(result).toHaveLength(0)
+      })
+
+      it('filters to only the subset of IDs provided', () => {
+        const result = filterVariants(
+          mixedVariants,
+          { ...baseFilter, clinvarVariationIds: ['111'] },
+          []
+        )
+        expect(result).toContain(clinvarVariant1)
+        expect(result).not.toContain(clinvarVariant2)
+        expect(result).toHaveLength(1)
       })
     })
   })

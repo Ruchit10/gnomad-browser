@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - "@fortawesome/fontawesome-free"
+  - core-js
+  - core-js-pure
+  - esbuild
+  - sharp
+  - sqlite3
